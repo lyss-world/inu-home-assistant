@@ -1,0 +1,17 @@
+complete_task:
+  name: Complete a task
+  description: Complete one task in your connected Inu account and return its feedback.
+  fields:
+    task_name:
+      name: Task name
+      description: The task's name from Inu. Several matching tasks are never chosen automatically.
+      required: true
+      example: Morning ritual
+      selector:
+        text:
+    config_entry_id:
+      name: Inu account
+      description: Choose an account if you connected more than one.
+      selector:
+        config_entry:
+          integration: inu

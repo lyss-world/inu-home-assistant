@@ -1,0 +1,14 @@
+{
+  "domain": "inu",
+  "name": "Inu",
+  "codeowners": [
+    "@lyss-world"
+  ],
+  "config_flow": true,
+  "documentation": "https://inuwithyou.com/help/home-assistant.html",
+  "integration_type": "service",
+  "iot_class": "cloud_polling",
+  "requirements": [],
+  "version": "1.0.1",
+  "issue_tracker": "https://github.com/lyss-world/inu-home-assistant/issues"
+}

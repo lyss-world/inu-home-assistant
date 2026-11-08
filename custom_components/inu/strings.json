@@ -1,0 +1,80 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Connect Inu",
+        "description": "In Inu, open [Settings → Devices & apps → Home Assistant](https://inuwithyou.com/?page=settings&section=devices), allow task completion and copy the connection key. Paste it here. No MQTT, MCP or YAML is needed.",
+        "data": {
+          "connection_key": "Inu connection key"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Reconnect Inu",
+        "description": "Create a new connection key in Inu Settings and paste it here. Use the same Inu account.",
+        "data": {
+          "connection_key": "New connection key"
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "This key is invalid, expired or revoked. Create a new one in Inu Settings.",
+      "cannot_connect": "Inu could not be reached. Check your connection and try again.",
+      "wrong_account": "This key belongs to another Inu account."
+    },
+    "abort": {
+      "already_configured": "This Inu account is already connected.",
+      "reauth_successful": "Inu is connected again."
+    }
+  },
+  "entity": {
+    "text": {
+      "task_name": {
+        "name": "Task name"
+      }
+    },
+    "button": {
+      "complete_task": {
+        "name": "Complete task"
+      },
+      "check_result": {
+        "name": "Check result"
+      },
+      "mark_reviewed": {
+        "name": "I reviewed the result in Inu"
+      }
+    },
+    "sensor": {
+      "task_result": {
+        "name": "Task result",
+        "state": {
+          "idle": "Ready",
+          "checking": "Checking",
+          "completed": "Completed",
+          "already_completed": "Already completed",
+          "not_found": "Task not found",
+          "ambiguous": "Choose a clearer task name",
+          "blocked": "Open task in Inu",
+          "unsupported": "Use one task name",
+          "unavailable": "Try later",
+          "uncertain": "Check result"
+        }
+      }
+    }
+  },
+  "services": {
+    "complete_task": {
+      "name": "Complete a task",
+      "description": "Complete one task in the connected Inu account. Nothing is selected when several names match.",
+      "fields": {
+        "task_name": {
+          "name": "Task name",
+          "description": "The name from Inu."
+        },
+        "config_entry_id": {
+          "name": "Inu account",
+          "description": "Choose an account if several are connected."
+        }
+      }
+    }
+  }
+}

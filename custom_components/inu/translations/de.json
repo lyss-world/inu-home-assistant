@@ -1,0 +1,80 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Inu verbinden",
+        "description": "Öffne in Inu [Settings → Devices & apps → Home Assistant](https://inuwithyou.com/?page=settings&section=devices). Erlaube das Abhaken von Tasks und kopiere den Verbindungsschlüssel hierher. MQTT, MCP und YAML werden nicht benötigt.",
+        "data": {
+          "connection_key": "Inu-Verbindungsschlüssel"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Inu erneut verbinden",
+        "description": "Erstelle in den Inu-Einstellungen einen neuen Verbindungsschlüssel und füge ihn hier ein. Verwende dasselbe Inu-Konto.",
+        "data": {
+          "connection_key": "Neuer Verbindungsschlüssel"
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "Der Schlüssel ist ungültig, abgelaufen oder widerrufen. Erstelle einen neuen in Inu.",
+      "cannot_connect": "Inu ist nicht erreichbar. Prüfe die Verbindung und versuche es erneut.",
+      "wrong_account": "Dieser Schlüssel gehört zu einem anderen Inu-Konto."
+    },
+    "abort": {
+      "already_configured": "Dieses Inu-Konto ist bereits verbunden.",
+      "reauth_successful": "Inu ist wieder verbunden."
+    }
+  },
+  "entity": {
+    "text": {
+      "task_name": {
+        "name": "Taskname"
+      }
+    },
+    "button": {
+      "complete_task": {
+        "name": "Task abhaken"
+      },
+      "check_result": {
+        "name": "Ergebnis prüfen"
+      },
+      "mark_reviewed": {
+        "name": "Ergebnis in Inu geprüft"
+      }
+    },
+    "sensor": {
+      "task_result": {
+        "name": "Task-Ergebnis",
+        "state": {
+          "idle": "Bereit",
+          "checking": "Wird geprüft",
+          "completed": "Erledigt",
+          "already_completed": "Bereits erledigt",
+          "not_found": "Task nicht gefunden",
+          "ambiguous": "Taskname genauer angeben",
+          "blocked": "Task in Inu öffnen",
+          "unsupported": "Einen Tasknamen angeben",
+          "unavailable": "Später versuchen",
+          "uncertain": "Ergebnis prüfen"
+        }
+      }
+    }
+  },
+  "services": {
+    "complete_task": {
+      "name": "Task abhaken",
+      "description": "Einen Task im verbundenen Inu-Konto abhaken. Mehrdeutige Namen führen zu keiner Änderung.",
+      "fields": {
+        "task_name": {
+          "name": "Taskname",
+          "description": "Der Name aus Inu."
+        },
+        "config_entry_id": {
+          "name": "Inu-Konto",
+          "description": "Bei mehreren Verbindungen ein Konto auswählen."
+        }
+      }
+    }
+  }
+}
