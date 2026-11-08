@@ -3,19 +3,23 @@ from .entity import InuEntity
 
 
 async def async_setup_entry(hass, entry, async_add_entities):
-    async_add_entities([InuTaskName(entry.runtime_data, "task_name")])
+    # Keep the old unique key so existing dashboards still find the input.
+    async_add_entities([InuMessage(entry.runtime_data, "task_name")])
 
 
-class InuTaskName(InuEntity, TextEntity):
+class InuMessage(InuEntity, TextEntity):
     _attr_native_min = 0
-    _attr_native_max = 120
+    _attr_native_max = 255
     _attr_mode = TextMode.TEXT
-    _attr_icon = "mdi:checkbox-marked-outline"
+    _attr_icon = "mdi:message-arrow-right-outline"
 
     @property
     def native_value(self):
-        return self.coordinator.draft
+        # Neither recorder nor restart may restore/replay a command draft.
+        return ""
 
     async def async_set_value(self, value):
-        self.coordinator.draft = value[:120]
+        if not value.strip():
+            return
+        await self.coordinator.async_send(value)
         self.async_write_ha_state()

@@ -1,14 +1,14 @@
-complete_task:
-  name: Complete a task
-  description: Complete one task in your connected Inu account and return its feedback.
+send_message:
+  name: Send message
+  description: Send a request to Inu, for example "task Wash to fluff abhaken", and receive its result. Currently supports completing one task.
   fields:
-    task_name:
-      name: Task name
-      description: The task's name from Inu. Several matching tasks are never chosen automatically.
+    message:
+      name: Message
       required: true
-      example: Morning ritual
+      example: task Wash to fluff abhaken
       selector:
         text:
+          multiline: true
     config_entry_id:
       name: Inu account
       description: Choose an account if you connected more than one.

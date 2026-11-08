@@ -29,13 +29,10 @@
   "entity": {
     "text": {
       "task_name": {
-        "name": "Task name"
+        "name": "Message to Inu"
       }
     },
     "button": {
-      "complete_task": {
-        "name": "Complete task"
-      },
       "check_result": {
         "name": "Check result"
       },
@@ -45,7 +42,7 @@
     },
     "sensor": {
       "task_result": {
-        "name": "Task result",
+        "name": "Response",
         "state": {
           "idle": "Ready",
           "checking": "Checking",
@@ -54,7 +51,7 @@
           "not_found": "Task not found",
           "ambiguous": "Choose a clearer task name",
           "blocked": "Open task in Inu",
-          "unsupported": "Use one task name",
+          "unsupported": "Ask to complete one task",
           "unavailable": "Try later",
           "uncertain": "Check result"
         }
@@ -62,17 +59,15 @@
     }
   },
   "services": {
-    "complete_task": {
-      "name": "Complete a task",
-      "description": "Complete one task in the connected Inu account. Nothing is selected when several names match.",
+    "send_message": {
+      "name": "Send message",
+      "description": "Write a request, for example: task Wash to fluff abhaken. Inu interprets the message and returns the result. Currently: complete one task.",
       "fields": {
-        "task_name": {
-          "name": "Task name",
-          "description": "The name from Inu."
+        "message": {
+          "name": "Message"
         },
         "config_entry_id": {
-          "name": "Inu account",
-          "description": "Choose an account if several are connected."
+          "name": "Inu account"
         }
       }
     }

@@ -14,15 +14,23 @@ integration, not an official Home Assistant integration.
 5. In Home Assistant, choose Settings > Devices & services > Add integration
    > Inu, then paste the key.
 
-Minimum Home Assistant 2025.1. Open the Inu device, enter a Task name and press
-Complete task. Automations can select Inu > Complete a task. Entering text alone
-changes nothing. Check result reads an unconfirmed result without resending it.
+Minimum Home Assistant 2025.1. Open the Inu device and enter a request in
+**Message to Inu**, for example `task Wash to fluff abhaken`. Confirming the input
+sends it immediately. **Response** shows the outcome. Automations use **Inu > Send
+message** with the same Message field; no YAML or extra helpers.
+
+Currently supports completing one task. It is not a general assistant connection.
+Check result under Diagnostics reads an unconfirmed result without resending it.
 If it remains unknown, review the task in Inu before choosing Mark reviewed.
+Existing Complete task automations remain compatible. Update to1.0.2 in HACS and
+restart Home Assistant: the old Complete task button is removed, and the existing
+text entity becomes the message input without replacing its identity.
 
 ## Data and access
 
-The connector sends the task name and a request ID to `https://inuwithyou.com`
-over HTTPS. Inu interprets the command using its configured AI service. It reads
+The connector sends your message and a request ID to `https://inuwithyou.com`
+over HTTPS. Inu handles explicit completion commands directly; other phrasings
+may be interpreted using its configured AI service. It reads
 connection status and command results; it does not upload your Home Assistant
 entity inventory, microphone, screen or PC activity. Home Assistant stores the
 connection key in its configuration; keep configuration and backups private.

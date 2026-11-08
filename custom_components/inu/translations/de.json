@@ -29,13 +29,10 @@
   "entity": {
     "text": {
       "task_name": {
-        "name": "Taskname"
+        "name": "Nachricht an Inu"
       }
     },
     "button": {
-      "complete_task": {
-        "name": "Task abhaken"
-      },
       "check_result": {
         "name": "Ergebnis prüfen"
       },
@@ -45,7 +42,7 @@
     },
     "sensor": {
       "task_result": {
-        "name": "Task-Ergebnis",
+        "name": "Antwort",
         "state": {
           "idle": "Bereit",
           "checking": "Wird geprüft",
@@ -54,7 +51,7 @@
           "not_found": "Task nicht gefunden",
           "ambiguous": "Taskname genauer angeben",
           "blocked": "Task in Inu öffnen",
-          "unsupported": "Einen Tasknamen angeben",
+          "unsupported": "Bitte einen Task abhaken lassen",
           "unavailable": "Später versuchen",
           "uncertain": "Ergebnis prüfen"
         }
@@ -62,17 +59,15 @@
     }
   },
   "services": {
-    "complete_task": {
-      "name": "Task abhaken",
-      "description": "Einen Task im verbundenen Inu-Konto abhaken. Mehrdeutige Namen führen zu keiner Änderung.",
+    "send_message": {
+      "name": "Nachricht senden",
+      "description": "Schreibe zum Beispiel: task Wash to fluff abhaken. Inu versteht die Nachricht und meldet das Ergebnis. Aktuell: einen Task abhaken.",
       "fields": {
-        "task_name": {
-          "name": "Taskname",
-          "description": "Der Name aus Inu."
+        "message": {
+          "name": "Nachricht"
         },
         "config_entry_id": {
-          "name": "Inu-Konto",
-          "description": "Bei mehreren Verbindungen ein Konto auswählen."
+          "name": "Inu-Konto"
         }
       }
     }

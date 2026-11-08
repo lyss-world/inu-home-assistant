@@ -27,7 +27,7 @@ class InuCoordinator(DataUpdateCoordinator):
         if self.pending and (not isinstance(self.pending, str) or not re.fullmatch(r"[a-f0-9]{32}", self.pending)):
             self.pending = "invalid"
         if self.pending:
-            self.result = {"outcome": "uncertain", "feedback": "Check the previous result before sending another task."}
+            self.result = {"outcome": "uncertain", "feedback": "Check the previous result before sending another message."}
 
     async def _async_update_data(self):
         try:
@@ -49,8 +49,14 @@ class InuCoordinator(DataUpdateCoordinator):
         task_name = task_name.strip()
         if not task_name or len(task_name) > 490:
             raise HomeAssistantError("Enter one task name, up to 490 characters.")
+        return await self.async_send(task_name + " abhaken")
+
+    async def async_send(self, message):
+        message = message.strip()
+        if not message or len(message) > 500:
+            raise HomeAssistantError("Enter a message, up to 500 characters.")
         if self.lock.locked() or self.pending:
-            raise HomeAssistantError("Check the previous result or mark it reviewed before sending another task.")
+            raise HomeAssistantError("Check the previous result or mark it reviewed before sending another message.")
         async with self.lock:
             self.pending = uuid4().hex
             # Save only the receipt ID, never task text or credentials, before network I/O.
@@ -58,12 +64,12 @@ class InuCoordinator(DataUpdateCoordinator):
             self.result = {"outcome": "checking", "feedback": ""}
             self.async_update_listeners()
             try:
-                result = await self.client.complete(self.pending, task_name)
+                result = await self.client.send(self.pending, message)
             except InvalidAuth:
                 self.entry.async_start_reauth(self.hass)
                 result = {"outcome": "uncertain", "feedback": "Reconnect Inu, then check the previous result."}
             except CannotConnect:
-                result = {"outcome": "uncertain", "feedback": "Not confirmed. Check the result; do not send the task again."}
+                result = {"outcome": "uncertain", "feedback": "Not confirmed. Check the result; do not send the message again."}
             finally:
                 self.async_update_listeners()
             return await self._accept(result)

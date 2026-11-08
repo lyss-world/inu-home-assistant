@@ -49,10 +49,14 @@ class InuClient:
             raise CannotConnect
         return value
 
-    async def complete(self, request_id, task_name):
-        # Explicit UI intent; existing Inu guards resolve the title and own completion.
+    async def send(self, request_id, message):
+        # Preserve the user's command verbatim; the cloud owns interpretation.
         return self._result(await self._request("POST", "/commands", json={
-            "request_id": request_id, "text": task_name + " abhaken"}))
+            "request_id": request_id, "text": message}))
+
+    async def complete(self, request_id, task_name):
+        # Compatibility for existing automations, not the primary UI.
+        return await self.send(request_id, task_name + " abhaken")
 
     async def receipt(self, request_id):
         if not re.fullmatch(r"[a-f0-9]{32}", request_id):
