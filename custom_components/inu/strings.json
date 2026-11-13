@@ -70,6 +70,18 @@
           "name": "Inu account"
         }
       }
+    },
+    "send_notification": {
+      "name": "Send notification",
+      "description": "Save a notification in Inu and show it when PC notifications are allowed.",
+      "fields": {
+        "message": {
+          "name": "Message"
+        },
+        "config_entry_id": {
+          "name": "Inu account"
+        }
+      }
     }
   }
 }

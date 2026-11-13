@@ -70,6 +70,18 @@
           "name": "Inu-Konto"
         }
       }
+    },
+    "send_notification": {
+      "name": "Benachrichtigung senden",
+      "description": "Hinweis in Inu speichern und am PC anzeigen, sobald Hinweise erlaubt sind.",
+      "fields": {
+        "message": {
+          "name": "Nachricht"
+        },
+        "config_entry_id": {
+          "name": "Inu-Konto"
+        }
+      }
     }
   }
 }

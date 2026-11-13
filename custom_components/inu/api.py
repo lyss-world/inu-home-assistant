@@ -45,7 +45,7 @@ class InuClient:
         if (not isinstance(value.get("connection_id"), str)
                 or not re.fullmatch(r"[a-f0-9]{32}", value["connection_id"])
                 or not isinstance(value.get("scopes"), list)
-                or "complete_tasks" not in value.get("scopes", [])):
+                or not set(value.get("scopes", [])) & {"complete_tasks", "send_notifications"}):
             raise CannotConnect
         return value
 

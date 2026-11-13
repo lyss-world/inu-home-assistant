@@ -26,7 +26,10 @@ async def async_setup_entry(hass, entry):
                 entries = [e for e in entries if e.entry_id == selected]
             if len(entries) != 1:
                 raise HomeAssistantError("Choose one connected Inu account.")
-            return await entries[0].runtime_data.async_send(call.data["message"])
+            result = await entries[0].runtime_data.async_send(call.data["message"])
+            if result["outcome"] not in {"completed", "already_completed", "queued"}:
+                raise HomeAssistantError(result["feedback"])
+            return result
         hass.services.async_register(DOMAIN, "send_message", send,
             schema=vol.Schema({vol.Required("message"): vol.All(str, vol.Length(min=1, max=500)),
                                vol.Optional("config_entry_id"): str}), supports_response=SupportsResponse.OPTIONAL)
@@ -37,9 +40,26 @@ async def async_setup_entry(hass, entry):
                 entries = [e for e in entries if e.entry_id == selected]
             if len(entries) != 1:
                 raise HomeAssistantError("Choose one connected Inu account.")
-            return await entries[0].runtime_data.async_complete(call.data["task_name"])
+            result = await entries[0].runtime_data.async_complete(call.data["task_name"])
+            if result["outcome"] not in {"completed", "already_completed"}:
+                raise HomeAssistantError(result["feedback"])
+            return result
         hass.services.async_register(DOMAIN, "complete_task", complete,
             schema=vol.Schema({vol.Required("task_name"): vol.All(str, vol.Length(min=1, max=490)),
+                               vol.Optional("config_entry_id"): str}), supports_response=SupportsResponse.OPTIONAL)
+    if not hass.services.has_service(DOMAIN, "send_notification"):
+        async def notify(call):
+            entries = [e for e in hass.config_entries.async_entries(DOMAIN) if getattr(e, "runtime_data", None)]
+            if selected := call.data.get("config_entry_id"):
+                entries = [e for e in entries if e.entry_id == selected]
+            if len(entries) != 1:
+                raise HomeAssistantError("Choose one connected Inu account.")
+            result = await entries[0].runtime_data.async_send("notify: " + call.data["message"])
+            if result["outcome"] != "queued":
+                raise HomeAssistantError(result["feedback"])
+            return result
+        hass.services.async_register(DOMAIN, "send_notification", notify,
+            schema=vol.Schema({vol.Required("message"): vol.All(str, vol.Length(min=1, max=320)),
                                vol.Optional("config_entry_id"): str}), supports_response=SupportsResponse.OPTIONAL)
     return True
 
@@ -53,4 +73,5 @@ async def async_unload_entry(hass, entry):
         if not any(getattr(e, "runtime_data", None) for e in hass.config_entries.async_entries(DOMAIN)):
             hass.services.async_remove(DOMAIN, "complete_task")
             hass.services.async_remove(DOMAIN, "send_message")
+            hass.services.async_remove(DOMAIN, "send_notification")
     return result

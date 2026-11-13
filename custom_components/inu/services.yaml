@@ -1,6 +1,6 @@
 send_message:
   name: Send message
-  description: Send a request to Inu, for example "task Wash to fluff abhaken", and receive its result. Currently supports completing one task.
+  description: Send a request to Inu, for example "task Wash to fluff abhaken", and receive its result. Supports completing one task; use Send notification for notices.
   fields:
     message:
       name: Message
@@ -12,6 +12,23 @@ send_message:
     config_entry_id:
       name: Inu account
       description: Choose an account if you connected more than one.
+      selector:
+        config_entry:
+          integration: inu
+
+send_notification:
+  name: Send notification
+  description: Save a notification in Inu and show it on your paired PC when notifications are allowed. Requires notification permission on the Inu connection key.
+  fields:
+    message:
+      name: Message
+      required: true
+      example: Open a window
+      selector:
+        text:
+          multiline: true
+    config_entry_id:
+      name: Inu account
       selector:
         config_entry:
           integration: inu

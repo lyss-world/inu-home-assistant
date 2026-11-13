@@ -40,3 +40,15 @@ To revoke access, choose Disconnect in Inu. Removing the HA entry alone does not
 revoke the key. Never post keys, task text or private logs in public issues.
 
 [Setup help](https://inuwithyou.com/help/home-assistant.html)
+
+
+## Notifications
+
+In Inu Settings, allow Home Assistant notifications when creating the connection key.
+In a Home Assistant automation, select **Inu: Send notification** and enter the message.
+The message stays in Inu notifications. A paired Windows app shows it when notifications
+are allowed; it respects your profiles, lock state and notice interval.
+
+**Inu: Send message** can complete one task: `task Wash to fluff abhaken`.
+It also supports `notify: Open a window` with notification permission.
+An action that is not confirmed reports an error instead of a successful automation.
