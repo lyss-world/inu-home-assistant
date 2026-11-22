@@ -9,22 +9,19 @@ integration, not an official Home Assistant integration.
 1. In HACS, open the menu > Custom repositories.
 2. Add `https://github.com/lyss-world/inu-home-assistant` as **Integration**.
 3. Download **Inu** and restart Home Assistant.
-4. In Inu Settings > Devices & apps > Home Assistant, approve task completion
+4. In Inu Settings > Integrations > Home Assistant, approve task completion
    and create a connection key with your current password.
 5. In Home Assistant, choose Settings > Devices & services > Add integration
    > Inu, then paste the key.
 
-Minimum Home Assistant 2025.1. Open the Inu device and enter a request in
-**Message to Inu**, for example `task Wash to fluff abhaken`. Confirming the input
-sends it immediately. **Response** shows the outcome. Automations use **Inu > Send
-message** with the same Message field; no YAML or extra helpers.
+Minimum Home Assistant 2025.1. In an automation, choose **Inu → Complete task**
+and enter its exact title in **Task name**. For a one-off command, enter
+`complete: Water the plants` in the Inu device’s **Message to Inu** field.
+**Response** shows the result.
 
-Currently supports completing one task. It is not a general assistant connection.
-Check result under Diagnostics reads an unconfirmed result without resending it.
-If it remains unknown, review the task in Inu before choosing Mark reviewed.
-Existing Complete task automations remain compatible. Update to1.0.2 in HACS and
-restart Home Assistant: the old Complete task button is removed, and the existing
-text entity becomes the message input without replacing its identity.
+The diagnostic buttons appear under Diagnostics. **Check unconfirmed result**
+looks up the original request. If it stays unconfirmed, check the task in Inu
+before choosing **Clear after manual check**. This unlocks the next command.
 
 ## Data and access
 
@@ -49,6 +46,6 @@ In a Home Assistant automation, select **Inu: Send notification** and enter the 
 The message stays in Inu notifications. A paired Windows app shows it when notifications
 are allowed; it respects your profiles, lock state and notice interval.
 
-**Inu: Send message** can complete one task: `task Wash to fluff abhaken`.
+**Inu: Send command** also accepts `complete: Water the plants`.
 It also supports `notify: Open a window` with notification permission.
 An action that is not confirmed reports an error instead of a successful automation.

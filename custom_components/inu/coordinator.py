@@ -49,7 +49,7 @@ class InuCoordinator(DataUpdateCoordinator):
         task_name = task_name.strip()
         if not task_name or len(task_name) > 490:
             raise HomeAssistantError("Enter one task name, up to 490 characters.")
-        return await self.async_send(task_name + " abhaken")
+        return await self.async_send("complete: " + task_name)
 
     async def async_send(self, message):
         message = message.strip()
@@ -90,7 +90,10 @@ class InuCoordinator(DataUpdateCoordinator):
     async def async_reviewed(self):
         if self.lock.locked():
             raise HomeAssistantError("Wait for the current action.")
-        await self.store.async_save(None)
-        self.pending = None
-        self.result = {"outcome": "idle", "feedback": ""}
-        self.async_update_listeners()
+        async with self.lock:
+            if not self.pending:
+                return
+            await self.store.async_save(None)
+            self.pending = None
+            self.result = {"outcome": "idle", "feedback": ""}
+            self.async_update_listeners()

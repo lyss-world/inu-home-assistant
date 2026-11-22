@@ -3,7 +3,7 @@
     "step": {
       "user": {
         "title": "Inu verbinden",
-        "description": "Öffne in Inu [Settings → Devices & apps → Home Assistant](https://inuwithyou.com/?page=settings&section=devices). Erlaube das Abhaken von Tasks und kopiere den Verbindungsschlüssel hierher. MQTT, MCP und YAML werden nicht benötigt.",
+        "description": "Öffne in Inu [Settings → Integrations → Home Assistant](https://inuwithyou.com/?page=settings&section=integrations&integration=homeassistant) und erstelle einen Verbindungsschlüssel. Füge ihn hier ein.",
         "data": {
           "connection_key": "Inu-Verbindungsschlüssel"
         }
@@ -29,57 +29,72 @@
   "entity": {
     "text": {
       "task_name": {
-        "name": "Nachricht an Inu"
+        "name": "Message to Inu"
       }
     },
     "button": {
       "check_result": {
-        "name": "Ergebnis prüfen"
+        "name": "Check unconfirmed result"
       },
       "mark_reviewed": {
-        "name": "Ergebnis in Inu geprüft"
+        "name": "Clear after manual check"
       }
     },
     "sensor": {
       "task_result": {
-        "name": "Antwort",
+        "name": "Response",
         "state": {
-          "idle": "Bereit",
-          "checking": "Wird geprüft",
-          "completed": "Erledigt",
-          "already_completed": "Bereits erledigt",
-          "not_found": "Task nicht gefunden",
-          "ambiguous": "Taskname genauer angeben",
-          "blocked": "Task in Inu öffnen",
-          "unsupported": "Bitte einen Task abhaken lassen",
-          "unavailable": "Später versuchen",
-          "uncertain": "Ergebnis prüfen"
+          "idle": "Ready",
+          "checking": "Checking",
+          "completed": "Completed",
+          "already_completed": "Already completed",
+          "not_found": "Task not found",
+          "ambiguous": "Choose a clearer task name",
+          "blocked": "Open task in Inu",
+          "unsupported": "Ask to complete one task",
+          "unavailable": "Try later",
+          "uncertain": "Check result",
+          "queued": "Saved in Inu"
         }
       }
     }
   },
   "services": {
-    "send_message": {
-      "name": "Nachricht senden",
-      "description": "Schreibe zum Beispiel: task Wash to fluff abhaken. Inu versteht die Nachricht und meldet das Ergebnis. Aktuell: einen Task abhaken.",
+    "complete_task": {
+      "name": "Complete task",
+      "description": "Use this to check off one task in an automation. Enter its full title from Inu, for example Water the plants.",
       "fields": {
-        "message": {
-          "name": "Nachricht"
+        "task_name": {
+          "name": "Task name",
+          "description": "The full title from Inu, for example Water the plants."
         },
         "config_entry_id": {
-          "name": "Inu-Konto"
+          "name": "Inu account",
+          "description": "Choose an account if you connected more than one."
+        }
+      }
+    },
+    "send_message": {
+      "name": "Send command",
+      "description": "Send a text command, for example complete: Water the plants. For a task with a known title, choose Complete task.",
+      "fields": {
+        "message": {
+          "name": "Command"
+        },
+        "config_entry_id": {
+          "name": "Inu account"
         }
       }
     },
     "send_notification": {
-      "name": "Benachrichtigung senden",
-      "description": "Hinweis in Inu speichern und am PC anzeigen, sobald Hinweise erlaubt sind.",
+      "name": "Send notification",
+      "description": "Send a note to your Inu inbox. Your PC can show it when notifications are enabled.",
       "fields": {
         "message": {
-          "name": "Nachricht"
+          "name": "Message"
         },
         "config_entry_id": {
-          "name": "Inu-Konto"
+          "name": "Inu account"
         }
       }
     }

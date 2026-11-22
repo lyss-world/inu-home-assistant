@@ -8,7 +8,10 @@ async def async_setup_entry(hass, entry, async_add_entities):
 
 
 class InuButton(InuEntity, ButtonEntity):
-    _attr_icon = "mdi:check"
+    @property
+    def icon(self):
+        return "mdi:refresh" if self._attr_translation_key == "check_result" else "mdi:check"
+
     _attr_entity_category = EntityCategory.DIAGNOSTIC
 
     @property

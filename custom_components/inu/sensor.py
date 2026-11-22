@@ -1,4 +1,5 @@
-from homeassistant.components.sensor import SensorEntity
+from homeassistant.components.sensor import SensorDeviceClass, SensorEntity
+from .const import FINAL_OUTCOMES
 from .entity import InuEntity
 
 
@@ -8,6 +9,8 @@ async def async_setup_entry(hass, entry, async_add_entities):
 
 class InuResult(InuEntity, SensorEntity):
     _attr_icon = "mdi:information-outline"
+    _attr_device_class = SensorDeviceClass.ENUM
+    _attr_options = sorted(FINAL_OUTCOMES | {"idle", "checking", "uncertain"})
     _unrecorded_attributes = frozenset({"feedback"})
 
     @property

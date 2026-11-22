@@ -1,11 +1,29 @@
+complete_task:
+  name: Complete task
+  description: Use this to check off one task in an automation. Enter its full title from Inu, for example Water the plants.
+  fields:
+    task_name:
+      name: Task name
+      description: Enter the full title as it appears in Inu.
+      required: true
+      example: Water the plants
+      selector:
+        text:
+    config_entry_id:
+      name: Inu account
+      description: Choose an account if you connected more than one.
+      selector:
+        config_entry:
+          integration: inu
+
 send_message:
-  name: Send message
-  description: Send a request to Inu, for example "task Wash to fluff abhaken", and receive its result. Supports completing one task; use Send notification for notices.
+  name: Send command
+  description: "Send a text command, for example complete: Water the plants. For a task with a known title, choose Complete task."
   fields:
     message:
-      name: Message
+      name: Command
       required: true
-      example: task Wash to fluff abhaken
+      example: "complete: Water the plants"
       selector:
         text:
           multiline: true
@@ -18,7 +36,7 @@ send_message:
 
 send_notification:
   name: Send notification
-  description: Save a notification in Inu and show it on your paired PC when notifications are allowed. Requires notification permission on the Inu connection key.
+  description: Send a note to your Inu inbox. Your PC can show it when notifications are enabled.
   fields:
     message:
       name: Message
