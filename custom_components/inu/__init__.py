@@ -15,9 +15,15 @@ async def async_setup_entry(hass, entry):
     await coordinator.async_config_entry_first_refresh()
     entry.runtime_data = coordinator
     registry = entity_registry.async_get(hass)
+    legacy_buttons = {"complete_task", "check_result", "mark_reviewed"}
     for entity in entity_registry.async_entries_for_config_entry(registry, entry.entry_id):
-        if entity.platform == DOMAIN and entity.unique_id == entry.unique_id + "_complete_task":
+        if entity.platform != DOMAIN:
+            continue
+        if entity.domain == "button" and any(entity.unique_id == entry.unique_id + "_" + key for key in legacy_buttons):
             registry.async_remove(entity.entity_id)
+        elif entity.unique_id == entry.unique_id + "_task_name" and entity.hidden_by is None and entity.name is None:
+            registry.async_update_entity(entity.entity_id, hidden_by=entity_registry.RegistryEntryHider.INTEGRATION)
+    coordinator.start_recovery()
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     if not hass.services.has_service(DOMAIN, "send_message"):
         async def send(call):
@@ -65,13 +71,17 @@ async def async_setup_entry(hass, entry):
 
 
 async def async_unload_entry(hass, entry):
-    if entry.runtime_data.lock.locked():
+    coordinator = entry.runtime_data
+    if coordinator.sending:
         return False
-    result = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
-    if result:
-        entry.runtime_data = None
-        if not any(getattr(e, "runtime_data", None) for e in hass.config_entries.async_entries(DOMAIN)):
-            hass.services.async_remove(DOMAIN, "complete_task")
-            hass.services.async_remove(DOMAIN, "send_message")
-            hass.services.async_remove(DOMAIN, "send_notification")
-    return result
+    await coordinator.stop_recovery()
+    if not await hass.config_entries.async_unload_platforms(entry, PLATFORMS):
+        coordinator.stopping = False
+        coordinator.start_recovery()
+        return False
+
+    entry.runtime_data = None
+    if not any(getattr(e, "runtime_data", None) for e in hass.config_entries.async_entries(DOMAIN)):
+        for service in ("complete_task", "send_message", "send_notification"):
+            hass.services.async_remove(DOMAIN, service)
+    return True

@@ -19,11 +19,11 @@ class InuClient:
         self.session = session
         self._key = key
 
-    async def _request(self, method, path, **kwargs):
+    async def _request(self, method, path, *, timeout=30, **kwargs):
         try:
             async with self.session.request(method, BASE_URL + path,
                     headers={"Authorization": "Bearer " + self._key},
-                    allow_redirects=False, timeout=aiohttp.ClientTimeout(total=30), **kwargs) as response:
+                    allow_redirects=False, timeout=aiohttp.ClientTimeout(total=timeout), **kwargs) as response:
                 if response.status in (401, 403):
                     raise InvalidAuth
                 if response.status != 200:
@@ -54,14 +54,15 @@ class InuClient:
         return self._result(await self._request("POST", "/commands", json={
             "request_id": request_id, "text": message}))
 
-    async def complete(self, request_id, task_name):
-        # Compatibility for existing automations, not the primary UI.
-        return await self.send(request_id, task_name + " abhaken")
-
     async def receipt(self, request_id):
         if not re.fullmatch(r"[a-f0-9]{32}", request_id):
             raise CannotConnect
-        return self._result(await self._request("GET", "/requests/" + request_id))
+        return self._result(await self._request("GET", "/requests/" + request_id, timeout=5))
+
+    async def resolve(self, request_id):
+        if not re.fullmatch(r"[a-f0-9]{32}", request_id):
+            raise CannotConnect
+        return self._result(await self._request("POST", "/requests/" + request_id + "/resolve", timeout=5))
 
     @staticmethod
     def _result(value):

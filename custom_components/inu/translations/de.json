@@ -29,72 +29,73 @@
   "entity": {
     "text": {
       "task_name": {
-        "name": "Message to Inu"
-      }
-    },
-    "button": {
-      "check_result": {
-        "name": "Check unconfirmed result"
+        "name": "Freitext"
       },
-      "mark_reviewed": {
-        "name": "Clear after manual check"
+      "complete_task_name": {
+        "name": "Task abhaken"
+      },
+      "send_notification_message": {
+        "name": "Hinweis an Inu"
       }
     },
     "sensor": {
       "task_result": {
-        "name": "Response",
+        "name": "Letztes Ergebnis",
         "state": {
-          "idle": "Ready",
-          "checking": "Checking",
-          "completed": "Completed",
-          "already_completed": "Already completed",
-          "not_found": "Task not found",
-          "ambiguous": "Choose a clearer task name",
-          "blocked": "Open task in Inu",
-          "unsupported": "Ask to complete one task",
-          "unavailable": "Try later",
-          "uncertain": "Check result",
-          "queued": "Saved in Inu"
+          "idle": "Bereit",
+          "checking": "Wartet auf Inu",
+          "completed": "Abgehakt",
+          "already_completed": "Bereits abgehakt",
+          "not_found": "Task nicht gefunden",
+          "ambiguous": "Taskname nicht eindeutig",
+          "blocked": "Task in Inu prüfen",
+          "unsupported": "Tasknamen prüfen",
+          "unavailable": "Bitte erneut versuchen",
+          "uncertain": "Inu prüft die letzte Aktion",
+          "queued": "Hinweis gesendet"
         }
       }
     }
   },
   "services": {
     "complete_task": {
-      "name": "Complete task",
-      "description": "Use this to check off one task in an automation. Enter its full title from Inu, for example Water the plants.",
+      "name": "Task abhaken",
+      "description": "Vollständigen Tasknamen aus Inu eingeben und abhaken.",
       "fields": {
         "task_name": {
-          "name": "Task name",
-          "description": "The full title from Inu, for example Water the plants."
+          "name": "Taskname",
+          "description": "Beispiel: Wash to fluff."
         },
         "config_entry_id": {
-          "name": "Inu account",
-          "description": "Choose an account if you connected more than one."
+          "name": "Inu-Konto",
+          "description": "Nur bei mehreren verbundenen Konten nötig."
         }
       }
     },
     "send_message": {
-      "name": "Send command",
-      "description": "Send a text command, for example complete: Water the plants. For a task with a known title, choose Complete task.",
+      "name": "Freitext-Befehl (erweitert)",
+      "description": "Für bestehende Automationen und freie Befehle. Für einen eindeutigen Titel wähle Task abhaken.",
       "fields": {
         "message": {
-          "name": "Command"
+          "name": "Befehl"
         },
         "config_entry_id": {
-          "name": "Inu account"
+          "name": "Inu-Konto",
+          "description": "Nur bei mehreren verbundenen Konten nötig."
         }
       }
     },
     "send_notification": {
-      "name": "Send notification",
-      "description": "Send a note to your Inu inbox. Your PC can show it when notifications are enabled.",
+      "name": "Hinweis an Inu",
+      "description": "Sendet den Text an den Inu-Posteingang.",
       "fields": {
         "message": {
-          "name": "Message"
+          "name": "Hinweis",
+          "description": "Beispiel: Fenster öffnen."
         },
         "config_entry_id": {
-          "name": "Inu account"
+          "name": "Inu-Konto",
+          "description": "Nur bei mehreren verbundenen Konten nötig."
         }
       }
     }

@@ -10,4 +10,4 @@ class InuEntity(CoordinatorEntity):
         self._attr_unique_id = coordinator.entry.unique_id + "_" + key
         self._attr_translation_key = key
         self._attr_device_info = {"identifiers": {(DOMAIN, coordinator.entry.unique_id)},
-                                  "name": "Inu", "manufacturer": "Inu", "model": "Cloud connection"}
+                                  "name": "Inu · Tasks & notifications", "manufacturer": "Inu", "model": "Inu account"}

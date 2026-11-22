@@ -1,14 +1,22 @@
-"""One bounded status read; durable uncertainty, no command replay."""
+"""One write per action, with automatic confirmation after connection loss."""
 import asyncio
+from contextlib import suppress
+from datetime import timedelta
+from hashlib import sha256
 import logging
 import re
-from datetime import timedelta
 from uuid import uuid4
+
 from homeassistant.exceptions import ConfigEntryAuthFailed, HomeAssistantError
 from homeassistant.helpers.storage import Store
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
+
 from .api import InvalidAuth, CannotConnect
-from .const import DOMAIN, FINAL_OUTCOMES
+from .const import DOMAIN, FINAL_OUTCOMES, KEY
+
+
+CHECKING = {"outcome": "checking", "feedback": "Waiting for Inu to confirm the last action."}
+UNCERTAIN = {"outcome": "uncertain", "feedback": "The last action is still being checked. Look in Inu if you need the answer now."}
 
 
 class InuCoordinator(DataUpdateCoordinator):
@@ -18,32 +26,97 @@ class InuCoordinator(DataUpdateCoordinator):
         self.entry, self.client = entry, client
         self.store = Store(hass, 1, DOMAIN + ".pending." + entry.entry_id)
         self.pending = None
-        self.draft = ""
+        self.legacy_pending = False
+        self.connection = sha256(entry.data[KEY].encode()).hexdigest()
         self.result = {"outcome": "idle", "feedback": ""}
         self.lock = asyncio.Lock()
+        self.sending = False
+        self.recovery = None
+        self.reauth = False
+        self.stopping = False
 
     async def async_restore(self):
-        self.pending = await self.store.async_load()
-        if self.pending and (not isinstance(self.pending, str) or not re.fullmatch(r"[a-f0-9]{32}", self.pending)):
-            self.pending = "invalid"
-        if self.pending:
-            self.result = {"outcome": "uncertain", "feedback": "Check the previous result before sending another message."}
+        saved = await self.store.async_load()
+        if saved is None:
+            return
+        identifier = saved if isinstance(saved, str) else saved.get("id") if isinstance(saved, dict) else None
+        if isinstance(identifier, str) and re.fullmatch(r"[a-f0-9]{32}", identifier):
+            if isinstance(saved, str) or saved.get("connection") == self.connection:
+                self.pending = identifier
+                self.legacy_pending = isinstance(saved, str)
+                self.result = CHECKING
+                return
+        # A new connection key cannot send the old action. Its previous outcome
+        # may already be committed, so report that boundary without replaying it.
+        await self.store.async_save(None)
+        self.result = {"outcome": "unavailable", "feedback": "Check the last action in Inu before repeating it."}
 
     async def _async_update_data(self):
         try:
-            return await self.client.info()
+            info = await self.client.info()
+            self.start_recovery()
+            return info
         except InvalidAuth as error:
             raise ConfigEntryAuthFailed("Reconnect Inu with a new connection key.") from error
         except CannotConnect as error:
             raise UpdateFailed("Inu is currently unavailable.") from error
 
     async def _accept(self, result):
-        self.result = result
         if result["outcome"] in FINAL_OUTCOMES:
             await self.store.async_save(None)
             self.pending = None
-        self.hass.loop.call_soon(self.async_update_listeners)
+            self.legacy_pending = False
+        self.result = result
+        self.async_update_listeners()
         return result
+
+    def _reauth(self):
+        if not self.reauth:
+            self.reauth = True
+            self.entry.async_start_reauth(self.hass)
+
+    async def _resolve_locked(self):
+        try:
+            if self.legacy_pending:
+                reply = await self.client.receipt(self.pending)
+                if reply["outcome"] in FINAL_OUTCOMES:
+                    return reply
+            reply = await self.client.resolve(self.pending)
+            if self.legacy_pending and reply["outcome"] == "unavailable":
+                # Old records lack their connection fingerprint. A missing
+                # receipt after a key replacement cannot establish non-delivery.
+                return {"outcome": "unavailable", "feedback": "Check the last action in Inu before repeating it."}
+            return reply
+        except InvalidAuth:
+            self._reauth()
+            return {"outcome": "uncertain", "feedback": "Reconnect Inu to check the last action."}
+        except CannotConnect:
+            return UNCERTAIN
+
+    def start_recovery(self):
+        if self.pending and not self.sending and not self.reauth and not self.stopping and not self.recovery:
+            self.recovery = self.hass.async_create_background_task(self._recover(), "Inu confirm last action")
+
+    async def _recover(self):
+        try:
+            for delay in (0, 3, 12):
+                if delay:
+                    await asyncio.sleep(delay)
+                async with self.lock:
+                    if not self.pending or self.reauth:
+                        return
+                    await self._accept(await self._resolve_locked())
+                    if not self.pending or self.reauth:
+                        return
+        finally:
+            self.recovery = None
+
+    async def stop_recovery(self):
+        self.stopping = True
+        if task := self.recovery:
+            task.cancel()
+            with suppress(asyncio.CancelledError):
+                await task
 
     async def async_complete(self, task_name):
         task_name = task_name.strip()
@@ -51,49 +124,38 @@ class InuCoordinator(DataUpdateCoordinator):
             raise HomeAssistantError("Enter one task name, up to 490 characters.")
         return await self.async_send("complete: " + task_name)
 
+    async def async_notify(self, message):
+        message = message.strip()
+        if not message or len(message) > 320:
+            raise HomeAssistantError("Enter a notification, up to 320 characters.")
+        return await self.async_send("notify: " + message)
+
     async def async_send(self, message):
         message = message.strip()
         if not message or len(message) > 500:
             raise HomeAssistantError("Enter a message, up to 500 characters.")
         if self.lock.locked() or self.pending:
-            raise HomeAssistantError("Check the previous result or mark it reviewed before sending another message.")
-        async with self.lock:
-            self.pending = uuid4().hex
-            # Save only the receipt ID, never task text or credentials, before network I/O.
-            await self.store.async_save(self.pending)
-            self.result = {"outcome": "checking", "feedback": ""}
-            self.async_update_listeners()
-            try:
-                result = await self.client.send(self.pending, message)
-            except InvalidAuth:
-                self.entry.async_start_reauth(self.hass)
-                result = {"outcome": "uncertain", "feedback": "Reconnect Inu, then check the previous result."}
-            except CannotConnect:
-                result = {"outcome": "uncertain", "feedback": "Not confirmed. Check the result; do not send the message again."}
-            finally:
+            self.start_recovery()
+            raise HomeAssistantError("Inu is checking the last action. See Last result on the Inu device.")
+        self.sending = True
+        try:
+            async with self.lock:
+                pending = uuid4().hex
+                # A command body or raw key is never persisted for recovery.
+                await self.store.async_save({"id": pending, "connection": self.connection})
+                self.pending = pending
+                self.result = CHECKING
                 self.async_update_listeners()
-            return await self._accept(result)
-
-    async def async_check(self):
-        if self.lock.locked() or not self.pending:
-            return self.result
-        async with self.lock:
-            try:
-                result = await self.client.receipt(self.pending)
-            except InvalidAuth:
-                self.entry.async_start_reauth(self.hass)
-                raise HomeAssistantError("Reconnect Inu, then check the result.") from None
-            except CannotConnect:
-                raise HomeAssistantError("Could not check the result. Try checking again.") from None
-            return await self._accept(result)
-
-    async def async_reviewed(self):
-        if self.lock.locked():
-            raise HomeAssistantError("Wait for the current action.")
-        async with self.lock:
-            if not self.pending:
-                return
-            await self.store.async_save(None)
-            self.pending = None
-            self.result = {"outcome": "idle", "feedback": ""}
-            self.async_update_listeners()
+                try:
+                    reply = await self.client.send(self.pending, message)
+                except InvalidAuth:
+                    self._reauth()
+                    reply = {"outcome": "uncertain", "feedback": "Reconnect Inu to check the last action."}
+                except CannotConnect:
+                    reply = UNCERTAIN
+                if reply["outcome"] == "uncertain" and not self.reauth:
+                    reply = await self._resolve_locked()
+                return await self._accept(reply)
+        finally:
+            self.sending = False
+            self.start_recovery()

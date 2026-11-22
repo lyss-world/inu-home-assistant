@@ -14,6 +14,10 @@ class InuResult(InuEntity, SensorEntity):
     _unrecorded_attributes = frozenset({"feedback"})
 
     @property
+    def available(self):
+        return super().available or self.coordinator.pending is not None
+
+    @property
     def native_value(self):
         return self.coordinator.result["outcome"]
 

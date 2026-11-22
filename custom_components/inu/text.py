@@ -1,25 +1,40 @@
 from homeassistant.components.text import TextEntity, TextMode
+from homeassistant.exceptions import HomeAssistantError
 from .entity import InuEntity
 
 
 async def async_setup_entry(hass, entry, async_add_entities):
-    # Keep the old unique key so existing dashboards still find the input.
-    async_add_entities([InuMessage(entry.runtime_data, "task_name")])
+    hub = entry.runtime_data
+    entities = []
+    if "complete_tasks" in hub.data["scopes"]:
+        entities.append(InuInput(hub, "complete_task_name", hub.async_complete, "mdi:checkbox-marked-circle-outline"))
+    if "send_notifications" in hub.data["scopes"]:
+        entities.append(InuInput(hub, "send_notification_message", hub.async_notify, "mdi:message-arrow-right-outline"))
+    # Keep existing automations and dashboards that use text.set_value.
+    entities.append(InuInput(hub, "task_name", hub.async_send, "mdi:message-text-outline", legacy=True))
+    async_add_entities(entities)
 
 
-class InuMessage(InuEntity, TextEntity):
+class InuInput(InuEntity, TextEntity):
     _attr_native_min = 0
     _attr_native_max = 255
     _attr_mode = TextMode.TEXT
-    _attr_icon = "mdi:message-arrow-right-outline"
+
+    def __init__(self, coordinator, key, submit, icon, *, legacy=False):
+        super().__init__(coordinator, key)
+        self._submit = submit
+        self._attr_icon = icon
+        self._attr_entity_registry_visible_default = not legacy
 
     @property
     def native_value(self):
-        # Neither recorder nor restart may restore/replay a command draft.
+        # Commands are one-shot. Never let the Recorder restore a draft.
         return ""
 
     async def async_set_value(self, value):
         if not value.strip():
             return
-        await self.coordinator.async_send(value)
+        result = await self._submit(value)
         self.async_write_ha_state()
+        if result["outcome"] not in {"completed", "already_completed", "queued"}:
+            raise HomeAssistantError(result["feedback"])
